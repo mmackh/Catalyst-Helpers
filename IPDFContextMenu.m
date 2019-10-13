@@ -66,10 +66,9 @@ typedef void(^IPDFContextMenuActionHandler)(void);
 - (void)show
 {
     id app = [NSClassFromString(@"NSApplication") performSelector:@selector(sharedApplication)];
-    NSArray *windows = [app performSelector:@selector(windows)];
-    if (!windows.count) return;
-    id window = windows.firstObject;
-    id currentEvent = [window performSelector:@selector(currentEvent)];
+    id keyWindow = [app performSelector:@selector(keyWindow)];
+    if (!keyWindow) return;
+    id currentEvent = [keyWindow performSelector:@selector(currentEvent)];
     
     [NSClassFromString(@"NSMenu") popUpContextMenu:self.attachedMenu withEvent:currentEvent forView:nil];
 }
