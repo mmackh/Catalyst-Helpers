@@ -19,6 +19,8 @@
 
 - (NSInteger)runModal;
 
+- (void)beginSheetModalForWindow:(id)sheetWindow completionHandler:(void (^)(NSInteger returnCode))handler;
+
 @end
 
 @implementation IPDFMacSavePanel
@@ -28,10 +30,17 @@
     NSSavePanel_Catalyst *savePanel = [NSClassFromString(@"NSSavePanel") savePanel];
     [savePanel setNameFieldStringValue:fileName];
     [savePanel setAllowedFileTypes:allowedFileExtensions];
-    if ([savePanel runModal] == 1)
+    
+    id app = [NSClassFromString(@"NSApplication") performSelector:@selector(sharedApplication)];
+    id keyWindow = [app performSelector:@selector(keyWindow)];
+    if (!keyWindow) return;
+    
+    __weak typeof(savePanel) weakSavePanel = savePanel;
+    
+    [savePanel beginSheetModalForWindow:keyWindow completionHandler:^(NSInteger returnCode)
     {
-        saveDataHandler(savePanel.URL);
-    }
+        saveDataHandler(weakSavePanel.URL);
+    }];
 }
 
 - (void)show
