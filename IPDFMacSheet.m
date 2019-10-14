@@ -27,7 +27,11 @@
 
 @property (nonatomic) UIView *backgroundView;
 
-@property (nonatomic) NSMutableDictionary<NSNumber *,IPDFMacSheetToolbarItemState *> *toolbarItemStates;
+@end
+
+@interface IPDFMacSheet ()
+
+@property (nonatomic,assign) BOOL disableToolbar;
 
 @end
 
@@ -40,6 +44,7 @@
 
 + (instancetype)showSheetWithSizeHandler:(CGSize(^)(CGRect windowBounds))sizeHandler viewConfigurationHandler:(void(^)(UIView *contentView))viewConfigurationHandler
 {
+    
     UIWindow *targetWindow = [self targetWindow];
     
     IPDFMacSheet *sheet = [[self class] new];
@@ -80,7 +85,7 @@
     
     [targetWindow addSubview:sheet];
     
-    viewConfigurationHandler(sheet);
+    if (viewConfigurationHandler) viewConfigurationHandler(sheet);
     
     [UIView animateWithDuration:0.4 animations:^
     {
@@ -88,27 +93,53 @@
         sheet.frame = targetSheetFrame;
     }];
     
+    if ([IPDFMacSheet currentSheets].count == 1)
+    {
+        sheet.disableToolbar = YES;
+    }
+    
     return sheet;
 }
 
 + (instancetype)currentSheet
 {
-    UIWindow *targetWindow = [self targetWindow];
+    return [IPDFMacSheet currentSheets].lastObject;
+}
+
++ (NSArray *)currentSheets
+{
+    NSMutableArray *sheetsMutable = [NSMutableArray new];
     
+    UIWindow *targetWindow = [self targetWindow];
     for (UIView *subview in targetWindow.subviews)
     {
-        if ([subview isKindOfClass:[self class]])
+        if ([subview isKindOfClass:[IPDFMacSheet class]])
         {
-            return (id)subview;
+            [sheetsMutable addObject:subview];
         }
     }
-    
-    return nil;
+    return sheetsMutable;
+}
+
+- (NSArray<UIKeyCommand *> *)keyCommands
+{
+    return @[[UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:0 action:@selector(dismiss)]];
+}
+
+- (void)dismiss
+{
+    [self dismissWithCompletionHandler:nil];
 }
 
 - (void)dismissWithCompletionHandler:(void (^)(void))completionHandler
 {
     self.sizeHandler = nil;
+    
+    if ([IPDFMacSheet currentSheets].count == 1)
+    {
+        self.disableToolbar = NO;
+        toolbarItemStates = nil;
+    }
     
     CGRect targetSheetFrame = self.frame;
     targetSheetFrame.origin.y = -targetSheetFrame.size.height;
@@ -141,13 +172,15 @@
     self.frame = targetFrame;
 }
 
+static NSMutableDictionary<NSNumber *,IPDFMacSheetToolbarItemState *> *toolbarItemStates;
+
 - (void)setDisableToolbar:(BOOL)disableToolbar
 {
     _disableToolbar = disableToolbar;
     
-    if (!self.toolbarItemStates)
+    if (!toolbarItemStates)
     {
-        self.toolbarItemStates = [NSMutableDictionary new];
+        toolbarItemStates = [NSMutableDictionary new];
     }
     
     UIWindowScene *scene = self.window.windowScene;
@@ -164,11 +197,11 @@
             IPDFMacSheetToolbarItemState *state = [IPDFMacSheetToolbarItemState new];
             state.autovalidates = toolbarItem.autovalidates;
             state.enabled = toolbarItem.enabled;
-            self.toolbarItemStates[@(idx)] = state;
+            toolbarItemStates[@(idx)] = state;
         }
         else
         {
-            IPDFMacSheetToolbarItemState *state = self.toolbarItemStates[@(idx)];
+            IPDFMacSheetToolbarItemState *state = toolbarItemStates[@(idx)];
             autovalidates = state.autovalidates;
             enabled = state.enabled;
         }
