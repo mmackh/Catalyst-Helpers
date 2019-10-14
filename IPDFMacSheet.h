@@ -14,8 +14,6 @@
 
 + (instancetype)currentSheet;
 
-@property (nonatomic,assign) BOOL disableToolbar;
-
 @property (nonatomic,copy) CGSize(^sizeHandler)(CGRect windowBounds);
 
 - (void)dismissWithCompletionHandler:(void(^)(void))completionHandler;
