@@ -135,12 +135,6 @@
 {
     self.sizeHandler = nil;
     
-    if ([IPDFMacSheet currentSheets].count == 1)
-    {
-        self.disableToolbar = NO;
-        toolbarItemStates = nil;
-    }
-    
     CGRect targetSheetFrame = self.frame;
     targetSheetFrame.origin.y = -targetSheetFrame.size.height;
     
@@ -152,6 +146,12 @@
     completion:^(BOOL finished)
     {
         if (completionHandler) completionHandler();
+
+        if ([IPDFMacSheet currentSheets].count == 1)
+        {
+            self.disableToolbar = NO;
+            toolbarItemStates = nil;
+        }
         
         [self.backgroundView removeFromSuperview];
         [self removeFromSuperview];
