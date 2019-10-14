@@ -27,8 +27,6 @@
 
 @property (nonatomic) UIView *backgroundView;
 
-@property (nonatomic,copy) CGSize(^sizeHandler)(CGRect windowBounds);
-
 @property (nonatomic) NSMutableDictionary<NSNumber *,IPDFMacSheetToolbarItemState *> *toolbarItemStates;
 
 @end
