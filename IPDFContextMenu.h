@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)show;
 
+@property (nonatomic, assign) BOOL allowsContextMenuPlugIns; // Defaults to NO
+
 @end
 
 @interface IPDFContextMenuAction : NSObject
