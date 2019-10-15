@@ -17,6 +17,8 @@
 
 - (id)currentEvent;
 
+@property (nonatomic) BOOL allowsContextMenuPlugIns;
+
 @end
 
 @interface NSMenuItem_Catalyst : NSObject
@@ -56,11 +58,18 @@ typedef void(^IPDFContextMenuActionHandler)(void);
     cM.actions = actions;
     cM.attachedMenu = [[NSClassFromString(@"NSMenu") alloc] init];
     cM.attachedMenu.autoenablesItems = NO;
+    cM.attachedMenu.allowsContextMenuPlugIns = NO;
     for (IPDFContextMenuAction *action in actions)
     {
         [cM.attachedMenu addItem:action.attachedItem];
     }
     return cM;
+}
+
+- (void)setAllowsContextMenuPlugIns:(BOOL)allowsContextMenuPlugIns
+{
+    _allowsContextMenuPlugIns = allowsContextMenuPlugIns;
+    self.attachedMenu.allowsContextMenuPlugIns = allowsContextMenuPlugIns;
 }
 
 - (void)show
