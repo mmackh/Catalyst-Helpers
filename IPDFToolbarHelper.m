@@ -23,6 +23,12 @@
 
 @end
 
+@interface NSUIWindow_Catalyst : NSObject
+
+- (void)makeFirstResponder:(id)obj;
+
+@end
+
 @interface NSSearchField_Catalyst : NSObject
 
 @property(weak) id<NSSearchFieldDelegate_Catalyst> delegate;
@@ -79,6 +85,11 @@
     if (![self.view isKindOfClass:NSClassFromString(@"NSSearchField")]) return @"";
     NSSearchField_Catalyst *searchField = self.view;
     return searchField.stringValue;
+}
+
+- (void)searchItemBecomeFirstResponder
+{
+    [[self.view window] performSelector:@selector(makeFirstResponder:) withObject:self.view];
 }
 
 @end
