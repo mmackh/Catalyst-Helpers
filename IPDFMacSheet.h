@@ -18,4 +18,6 @@
 
 - (void)dismissWithCompletionHandler:(void(^)(void))completionHandler;
 
++ (void)changeStateForToolbarItem:(NSToolbarItem *)toolbarItem stateAfterDismissal:(BOOL)stateAfterDismissal;
+
 @end
