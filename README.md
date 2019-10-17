@@ -13,6 +13,6 @@ When embedding a UITableView on the left panel of a UISplitView (self.primaryBac
 
 ![NSOutlineView in Finder design](https://github.com/mmackh/Catalyst-Helpers/blob/master/screenshots/Finder%20Left%20Panel.png?raw=true)
 
-On the Catalyst side of things, a click and subsequent selection of a given cell can cause the blue (or the user's chosen accent color) highlight to shimmer through on a single click. On a double click, the cell will turn blue. There is no apparent way to prevent the cell from changing to a solid color on double click without having to implement your own custom selectedBackgroundView and therefore losing the UIVibrancyEffect on selection. 
+On the Catalyst side of things, a click and subsequent selection of a given cell can cause the blue (or the user's chosen accent color) highlight to shimmer/glitch through. On a double click, the cell will turn blue. There is no apparent way to prevent the cell from changing to a solid color on double click without having to implement your own custom selectedBackgroundView and therefore losing the UIVibrancyEffect on selection. 
 
 The workaround is quite simple (took me a while): add a UITapGestureRecognizer (numberOfTapsRequired = 1) to your cell. You'll have to manually create a protocol and then select the cell. Once these measures are implemented, double clicking on a clell will no longer turn the cell blue and the behaviour will be indistinguishable from a native app like Finder.  
