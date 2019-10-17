@@ -18,6 +18,7 @@
 
 @interface IPDFMacSheetToolbarItemState : NSObject
 
+@property (nonatomic,weak) NSToolbarItem *toolbarItem;
 @property (nonatomic) BOOL enabled;
 @property (nonatomic) BOOL autovalidates;
 
@@ -31,7 +32,7 @@
 
 @interface IPDFMacSheet ()
 
-@property (nonatomic,assign) BOOL disableToolbar;
++ (void)setDisableToolbar:(BOOL)toolbar;
 
 @end
 
@@ -95,7 +96,7 @@
     
     if ([IPDFMacSheet currentSheets].count == 1)
     {
-        sheet.disableToolbar = YES;
+        [IPDFMacSheet setDisableToolbar:YES];
     }
     
     return sheet;
@@ -149,7 +150,7 @@
 
         if ([IPDFMacSheet currentSheets].count == 1)
         {
-            self.disableToolbar = NO;
+            [IPDFMacSheet setDisableToolbar:NO];
             toolbarItemStates = nil;
         }
         
@@ -172,44 +173,53 @@
     self.frame = targetFrame;
 }
 
-static NSMutableDictionary<NSNumber *,IPDFMacSheetToolbarItemState *> *toolbarItemStates;
+static NSMutableArray<IPDFMacSheetToolbarItemState *> *toolbarItemStates;
 
-- (void)setDisableToolbar:(BOOL)disableToolbar
++ (void)changeStateForToolbarItem:(NSToolbarItem *)toolbarItem stateAfterDismissal:(BOOL)stateAfterDismissal
 {
-    _disableToolbar = disableToolbar;
-    
+    for (IPDFMacSheetToolbarItemState *state in toolbarItemStates)
+    {
+        if (state.toolbarItem != toolbarItem) continue;
+        
+        state.enabled = stateAfterDismissal;
+    }
+}
+
++ (void)setDisableToolbar:(BOOL)disableToolbar
+{
     if (!toolbarItemStates)
     {
-        toolbarItemStates = [NSMutableDictionary new];
+        toolbarItemStates = [NSMutableArray new];
     }
     
-    UIWindowScene *scene = self.window.windowScene;
+    UIWindowScene *scene = [IPDFMacSheet currentSheet].window.windowScene;
     [scene.titlebar.toolbar setDisplayMode:NSToolbarDisplayModeIconAndLabel];
     
-    NSInteger idx = 0;
+    if (!disableToolbar)
+    {
+        for (IPDFMacSheetToolbarItemState *state in toolbarItemStates)
+        {
+            NSToolbarItem *item = state.toolbarItem;
+            item.autovalidates = state.autovalidates;
+            item.enabled = state.enabled;
+        }
+        
+        return;
+    }
+    
     for (NSToolbarItem *toolbarItem in scene.titlebar.toolbar.items)
     {
-        BOOL autovalidates = !disableToolbar;
-        BOOL enabled = !disableToolbar;
+        BOOL autovalidates = NO;
+        BOOL enabled = NO;
         
-        if (disableToolbar)
-        {
-            IPDFMacSheetToolbarItemState *state = [IPDFMacSheetToolbarItemState new];
-            state.autovalidates = toolbarItem.autovalidates;
-            state.enabled = toolbarItem.enabled;
-            toolbarItemStates[@(idx)] = state;
-        }
-        else
-        {
-            IPDFMacSheetToolbarItemState *state = toolbarItemStates[@(idx)];
-            autovalidates = state.autovalidates;
-            enabled = state.enabled;
-        }
+        IPDFMacSheetToolbarItemState *state = [IPDFMacSheetToolbarItemState new];
+        state.autovalidates = toolbarItem.autovalidates;
+        state.enabled = toolbarItem.enabled;
+        state.toolbarItem = toolbarItem;
+        [toolbarItemStates addObject:state];
         
         toolbarItem.autovalidates = autovalidates;
         toolbarItem.enabled = enabled;
-        
-        idx += 1;
     }
 }
 
