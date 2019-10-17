@@ -13,6 +13,7 @@
 + (instancetype)sharedColorPanel;
 
 - (void)makeKeyAndOrderFront:(id)sender;
+- (void)orderFront:(id)sender;
 - (void)orderOut:(id)sender;
 
 - (void)setTarget:(id)target;
@@ -53,7 +54,7 @@
     NSColorPanel_Catalyst *colorPanel = [self colorPanel];
     [colorPanel setTarget:observer];
     [colorPanel setAction:@selector(colorChange:)];
-    [colorPanel makeKeyAndOrderFront:nil];
+    [colorPanel orderFront:nil];
 }
 
 + (void)hide
