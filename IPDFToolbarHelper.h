@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)searchItemWithItemIdentifier:(NSString *)itemIdentifier textDidChangeHandler:(void(^)(NSString *stringValue))textDidChangeHandler;
 
 @property (nonatomic) NSString *searchFieldStringValue;
+- (void)searchItemBecomeFirstResponder;
 
 @end
 
