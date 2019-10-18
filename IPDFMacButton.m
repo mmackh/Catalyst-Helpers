@@ -37,6 +37,11 @@
     return button;
 }
 
+- (BOOL)canBecomeFirstResponder
+{
+    return YES;
+}
+
 - (NSArray<UIKeyCommand *> *)keyCommands
 {
     return @[[UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(click:)]];
