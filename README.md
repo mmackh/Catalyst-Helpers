@@ -6,7 +6,7 @@ Unlock missing UIKit functionality with these unsafe AppKit helpers. The overall
 The fundamental aspect of what sets iOS (excluding tvOS) aparat form macOS is the inability to correctly navigate through views, not only text fields, with a keyboard. I've come to realise that a UIKeyCommand is not enough and sometimes you would simply be better off with keyDown:, which iOS lacks. So I've wrapped NSEvent's addLocalMonitorForEventsMatchingMask - where you are able to choose whether an event actually gets passed to UIKit or not. Always remember to removeMonitor: otherwhise you'll be left with leaks everywhere.
 
 ```
-IPDFMacEventBusMontior *monitor = [IPDFMacEventBusMontior monitorWithType:IPDFMacEventBusTypeKeydown eventHandler:^IPDFMacEventBusEvent *(IPDFMacEventBusEvent *event)
+IPDFMacEventBusMonitor *monitor = [IPDFMacEventBusMonitor monitorWithType:IPDFMacEventBusTypeKeydown eventHandler:^IPDFMacEventBusEvent *(IPDFMacEventBusEvent *event)
 {
     if ([event isTab])
     {
@@ -53,7 +53,7 @@ IPDFMacEventBusMontior *monitor = [IPDFMacEventBusMontior monitorWithType:IPDFMa
     return event;
 }];
 sheet.monitor = monitor;
-[[IPDFMacEventBus sharedBus] addMontior:monitor];
+[[IPDFMacEventBus sharedBus] addMonitor:monitor];
 ```
 
 ## Additional Catalyst Workarounds
