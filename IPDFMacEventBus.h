@@ -1,5 +1,5 @@
 //
-//  IPDFMacKeyBus.h
+//  IPDFMacEventBus.h
 //  InstaPDF for Mac
 //
 //  Created by mmackh on 18.10.19.
@@ -8,24 +8,24 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(NSInteger, IPDFMacEventBusType)
+typedef NS_ENUM(unsigned long long, IPDFMacEventBusType)
 {
-    IPDFMacEventBusTypeKeydown
+    IPDFMacEventBusTypeKeydown = 1ULL << 10
 };
 
-@class IPDFMacEventBusMontior;
+@class IPDFMacEventBusMonitor;
 @class IPDFMacEventBusEvent;
 
 @interface IPDFMacEventBus : NSObject
 
 + (instancetype)sharedBus;
 
-- (void)addMontior:(IPDFMacEventBusMontior *)monitor;
-- (void)removeMonditor:(IPDFMacEventBusMontior *)monitor;
+- (void)addMonitor:(IPDFMacEventBusMonitor *)monitor;
+- (void)removeMonitor:(IPDFMacEventBusMonitor *)monitor;
 
 @end
 
-@interface IPDFMacEventBusMontior : NSObject
+@interface IPDFMacEventBusMonitor : NSObject
 
 + (instancetype)monitorWithType:(IPDFMacEventBusType)type eventHandler:(IPDFMacEventBusEvent *(^)(IPDFMacEventBusEvent *event))eventHandler;
 
