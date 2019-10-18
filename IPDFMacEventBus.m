@@ -1,5 +1,5 @@
 //
-//  IPDFMacKeyBus.m
+//  IPDFMacEventBus.m
 //  InstaPDF for Mac
 //
 //  Created by mmackh on 18.10.19.
@@ -27,7 +27,7 @@
 
 @end
 
-@interface IPDFMacEventBusMontior ()
+@interface IPDFMacEventBusMonitor ()
 
 @property (nonatomic) IPDFMacEventBusType type;
 @property (nonatomic, copy) IPDFMacEventBusEvent *(^eventHandler)(IPDFMacEventBusEvent *event);
@@ -56,21 +56,11 @@
     return bus;
 }
 
-+ (long)maskForType:(IPDFMacEventBusType)type
-{
-    switch (type)
-    {
-        case IPDFMacEventBusTypeKeydown:
-            return 1ULL << 10;
-            break;
-    }
-}
-
-- (void)addMontior:(IPDFMacEventBusMontior *)monitor
+- (void)addMonitor:(IPDFMacEventBusMonitor *)monitor
 {
     NSEvent_Catalyst *class = (id)NSClassFromString(@"NSEvent");
     __weak typeof(monitor) weakMonitor = monitor;
-    monitor.eventMonitor = [class addLocalMonitorForEventsMatchingMask:[IPDFMacEventBus maskForType:monitor.type] handler:^id(NSEvent_Catalyst *event)
+    monitor.eventMonitor = [class addLocalMonitorForEventsMatchingMask:monitor.type handler:^id(NSEvent_Catalyst *event)
     {
         IPDFMacEventBusEvent *busEvent = [IPDFMacEventBusEvent new];
         busEvent.type = weakMonitor.type;
@@ -80,7 +70,7 @@
     [self.monitorsMutable addObject:monitor];
 }
 
-- (void)removeMonditor:(IPDFMacEventBusMontior *)monitor
+- (void)removeMonitor:(IPDFMacEventBusMonitor *)monitor
 {
     NSEvent_Catalyst *class = (id)NSClassFromString(@"NSEvent");
     [class removeMonitor:monitor.eventMonitor];
@@ -91,11 +81,11 @@
 
 @end
 
-@implementation IPDFMacEventBusMontior
+@implementation IPDFMacEventBusMonitor
 
 + (instancetype)monitorWithType:(IPDFMacEventBusType)type eventHandler:(IPDFMacEventBusEvent *(^)(IPDFMacEventBusEvent *event))eventHandler
 {
-    IPDFMacEventBusMontior *monitor = [IPDFMacEventBusMontior new];
+    IPDFMacEventBusMonitor *monitor = [IPDFMacEventBusMonitor new];
     monitor.type = type;
     monitor.eventHandler = eventHandler;
     return monitor;
