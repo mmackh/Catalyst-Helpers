@@ -1,6 +1,61 @@
 # Catalyst-Helpers
 Unlock missing UIKit functionality with these unsafe AppKit helpers. The overall goal is to let Apple know what functionality is missing in UIKit to build better apps for the Mac.
 
+## IPDFMacEventBus & Keyboard Navigation
+
+The fundamental aspect of what sets iOS (excluding tvOS) aparat form macOS is the inability to correctly navigate through views, not only text fields, with a keyboard. I've come to realise that a UIKeyCommand is not enough and sometimes you would simply be better off with keyDown:, which iOS lacks. So I've wrapped NSEvent's addLocalMonitorForEventsMatchingMask - where you are able to choose whether an event actually gets passed to UIKit or not. Always remember to removeMonitor: otherwhise you'll be left with leaks everywhere.
+
+```
+IPDFMacEventBusMontior *monitor = [IPDFMacEventBusMontior monitorWithType:IPDFMacEventBusTypeKeydown eventHandler:^IPDFMacEventBusEvent *(IPDFMacEventBusEvent *event)
+{
+    if ([event isTab])
+    {
+        if (weakSelf.cancel.isFirstResponder)
+        {
+            [weakSelf.save becomeFirstResponder];
+            return nil;
+        }
+
+        if (weakSelf.save.isFirstResponder)
+        {
+            [weakSelf.textField becomeFirstResponder];
+            return nil;
+        }
+
+        if (weakSelf.textField.isFirstResponder)
+        {
+            [weakSelf.cancel becomeFirstResponder];
+            return nil;
+        }
+    }
+
+    if ([event isEnter])
+    {
+        if (weakSelf.cancel.isFirstResponder)
+        {
+            [weakSelf.cancel sendActionsForControlEvents:UIControlEventTouchUpInside];
+            return nil;
+        }
+
+        if (weakSelf.save.isFirstResponder)
+        {
+            [weakSelf.save sendActionsForControlEvents:UIControlEventTouchUpInside];
+            return nil;
+        }
+    }
+
+    if ([event isESC])
+    {
+        [weakSelf dismissWithCompletionHandler:nil];
+        return nil;
+    }
+
+    return event;
+}];
+sheet.monitor = monitor;
+[[IPDFMacEventBus sharedBus] addMontior:monitor];
+```
+
 ## Additional Catalyst Workarounds
 
 In addition to the helper classes I created, there were still some visual glitches and other unexpected behaviour in UIKit that will feel foreign on the Mac that cannot be abstracted
