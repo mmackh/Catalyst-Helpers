@@ -62,6 +62,8 @@
     __weak typeof(monitor) weakMonitor = monitor;
     monitor.eventMonitor = [class addLocalMonitorForEventsMatchingMask:monitor.type handler:^id(NSEvent_Catalyst *event)
     {
+        if (!weakMonitor.enabled) return event;
+        
         IPDFMacEventBusEvent *busEvent = [IPDFMacEventBusEvent new];
         busEvent.type = weakMonitor.type;
         busEvent.underlyingEvent = event;
@@ -76,6 +78,7 @@
     [class removeMonitor:monitor.eventMonitor];
     monitor.eventMonitor = nil;
     monitor.eventHandler = nil;
+    monitor.enabled = NO;
     [self.monitorsMutable removeObject:monitor];
 }
 
@@ -88,6 +91,7 @@
     IPDFMacEventBusMonitor *monitor = [IPDFMacEventBusMonitor new];
     monitor.type = type;
     monitor.eventHandler = eventHandler;
+    monitor.enabled = YES;
     return monitor;
 }
 
