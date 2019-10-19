@@ -55,7 +55,16 @@
     CGRect windowBounds = targetWindow.frame;
     windowBounds.origin.y = safeAreaInsets.top;
     windowBounds.size.height -= safeAreaInsets.top;
-    sheet.backgroundView = [[UIView alloc] initWithFrame:windowBounds];
+    
+    CGRect backgroundViewFrame = windowBounds;
+    IPDFMacSheet *possibleParentSheet = [IPDFMacSheet currentSheet];
+    if (possibleParentSheet)
+    {
+        // Avoid compounding white background that turns more opaque the more sheets are stacked
+        backgroundViewFrame = possibleParentSheet.frame;
+    }
+    
+    sheet.backgroundView = [[UIView alloc] initWithFrame:backgroundViewFrame];
     sheet.backgroundView.backgroundColor = [UIColor clearColor];
     sheet.backgroundView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [targetWindow addSubview:sheet.backgroundView];
@@ -122,11 +131,6 @@
     return sheetsMutable;
 }
 
-- (NSArray<UIKeyCommand *> *)keyCommands
-{
-    return @[[UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:0 action:@selector(dismiss)]];
-}
-
 - (void)dismiss
 {
     [self dismissWithCompletionHandler:nil];
@@ -165,12 +169,17 @@
     
     if (!self.sizeHandler) return;
     
-    CGSize targetSize = self.sizeHandler(self.backgroundView.bounds);
+    CGSize targetSize = self.sizeHandler(self.superview.bounds);
     CGRect targetFrame = self.frame;
-    targetFrame.origin.x = self.backgroundView.bounds.size.width / 2 - targetSize.width/2;
+    targetFrame.origin.x = self.superview.bounds.size.width / 2 - targetSize.width/2;
     targetFrame.size = targetSize;
     
     self.frame = targetFrame;
+}
+
++ (BOOL)dismissableWithESCKey
+{
+    return YES;
 }
 
 static NSMutableArray<IPDFMacSheetToolbarItemState *> *toolbarItemStates;
