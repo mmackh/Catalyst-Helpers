@@ -29,6 +29,8 @@ typedef NS_ENUM(unsigned long long, IPDFMacEventBusType)
 
 + (instancetype)monitorWithType:(IPDFMacEventBusType)type eventHandler:(IPDFMacEventBusEvent *(^)(IPDFMacEventBusEvent *event))eventHandler;
 
+@property (nonatomic,assign) BOOL enabled;
+
 @end
 
 @interface IPDFMacEventBusEvent : NSObject
