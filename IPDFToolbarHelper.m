@@ -94,6 +94,12 @@
 
 @end
 
+@implementation NSToolbar_Catalyst
+
+@dynamic sizeMode;
+
+@end
+
 @implementation IPDFToolbarHelper
 
 @end
