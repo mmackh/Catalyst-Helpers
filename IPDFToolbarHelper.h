@@ -24,6 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface NSToolbar_Catalyst : NSToolbar
+
+@property NSToolbarSizeMode sizeMode;
+
+@end
+
 @interface IPDFToolbarHelper : NSObject
 
 @end
