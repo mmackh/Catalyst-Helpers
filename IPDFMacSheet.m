@@ -40,7 +40,18 @@
 
 + (UIWindow *)targetWindow
 {
-    return [UIApplication sharedApplication].windows.firstObject;
+    UIWindow *targetWindow = nil;
+    
+    for (UIWindow *window in [UIApplication sharedApplication].windows)
+    {
+        if (window.isKeyWindow)
+        {
+            targetWindow = window;
+            break;
+        }
+    }
+    
+    return targetWindow;
 }
 
 + (instancetype)showSheetWithSizeHandler:(CGSize(^)(CGRect windowBounds))sizeHandler viewConfigurationHandler:(void(^)(UIView *contentView))viewConfigurationHandler
@@ -97,7 +108,7 @@
     
     if (viewConfigurationHandler) viewConfigurationHandler(sheet);
     
-    [UIView animateWithDuration:0.4 animations:^
+    [UIView animateWithDuration:0.35 animations:^
     {
         sheet.backgroundView.backgroundColor = [[UIColor systemBackgroundColor] colorWithAlphaComponent:0.15];
         sheet.frame = targetSheetFrame;
