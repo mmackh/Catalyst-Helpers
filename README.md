@@ -56,6 +56,26 @@ sheet.monitor = monitor;
 [[IPDFMacEventBus sharedBus] addMonitor:monitor];
 ```
 
+## IPDFMacEventBus & App State Events
+
+InstaPDF doesn't fetch documents in the background, but rather when the window becomes key. At first it was quite confusing not being able to know when this occurs, due to UIApplicationWillEnterForegroundNotification only firing once on launch. I pondered swizzling, but observing notifications is a better solution. Again, remove the monitors to prevent leaks.
+
+```
+[[IPDFMacEventBus sharedBus] addMonitor:[IPDFMacEventBusMonitor monitorWithType:IPDFMacEventBusTypeAppState eventHandler:^IPDFMacEventBusEvent *(IPDFMacEventBusEvent *event)
+{
+    if (event.appState == IPDFMacEventBusAppStateEventBecomeActive)
+    {
+        NSLog(@"Become Active");
+    }
+
+    if (event.appState == IPDFMacEventBusAppStateEventTerminate)
+    {
+        NSLog(@"Terminate...");
+    }
+return nil;
+}]];
+```
+
 ## Additional Catalyst Workarounds
 
 In addition to the helper classes I created, there were still some visual glitches and other unexpected behaviour in UIKit that will feel foreign on the Mac that cannot be abstracted
