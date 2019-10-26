@@ -10,7 +10,18 @@
 
 typedef NS_ENUM(unsigned long long, IPDFMacEventBusType)
 {
-    IPDFMacEventBusTypeKeydown = 1ULL << 10
+    IPDFMacEventBusTypeKeydown = 1ULL << 10,
+    IPDFMacEventBusTypeAppState = 2ULL << 10
+};
+
+typedef NS_ENUM(NSInteger, IPDFMacEventBusAppStateEvent)
+{
+    IPDFMacEventBusAppStateEventHide,
+    IPDFMacEventBusAppStateEventUnhide,
+    IPDFMacEventBusAppStateEventBecomeActive,
+    IPDFMacEventBusAppStateEventResignActive,
+    IPDFMacEventBusAppStateEventTerminate,
+    IPDFMacEventBusAppStateEventScreenParameters,
 };
 
 @class IPDFMacEventBusMonitor;
@@ -48,5 +59,11 @@ typedef NS_ENUM(unsigned long long, IPDFMacEventBusType)
 - (BOOL)isTab;
 - (BOOL)isEnter;
 - (BOOL)isESC;
+
+@end
+
+@interface IPDFMacEventBusEvent (AppState)
+
+- (IPDFMacEventBusAppStateEvent)appState;
 
 @end
