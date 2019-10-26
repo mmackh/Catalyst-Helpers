@@ -14,16 +14,17 @@
 - (void)removeMonitor:(id)eventMonitor;
 
 @property (readonly) unsigned short keyCode;
-@property (readonly, copy) NSString *characters;
+@property (readonly,copy) NSString *characters;
 
 @end
 
 @interface IPDFMacEventBusEvent ()
 
 @property (nonatomic,readwrite) IPDFMacEventBusType type;
-@property (nonatomic,readwrite) NSString *characters;
 
 @property (nonatomic,readwrite) NSEvent_Catalyst *underlyingEvent;
+
+@property (nonatomic,readwrite) IPDFMacEventBusAppStateEvent appStateEvent;
 
 @end
 
@@ -33,6 +34,8 @@
 @property (nonatomic, copy) IPDFMacEventBusEvent *(^eventHandler)(IPDFMacEventBusEvent *event);
 
 @property (nonatomic) id eventMonitor;
+
+- (void)appStateEventNotification:(NSNotification *)notification;
 
 @end
 
@@ -60,15 +63,28 @@
 {
     NSEvent_Catalyst *class = (id)NSClassFromString(@"NSEvent");
     __weak typeof(monitor) weakMonitor = monitor;
-    monitor.eventMonitor = [class addLocalMonitorForEventsMatchingMask:monitor.type handler:^id(NSEvent_Catalyst *event)
+    
+    if (monitor.type == IPDFMacEventBusTypeAppState)
     {
-        if (!weakMonitor.enabled) return event;
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [[IPDFMacEventBus appStateEventsMap] enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop)
+        {
+            [notificationCenter addObserver:monitor selector:@selector(appStateEventNotification:) name:key object:nil];
+        }];
+    }
+    else
+    {
         
-        IPDFMacEventBusEvent *busEvent = [IPDFMacEventBusEvent new];
-        busEvent.type = weakMonitor.type;
-        busEvent.underlyingEvent = event;
-        return weakMonitor.eventHandler(busEvent).underlyingEvent;
-    }];
+        monitor.eventMonitor = [class addLocalMonitorForEventsMatchingMask:monitor.type handler:^id(NSEvent_Catalyst *event)
+        {
+            if (!weakMonitor.enabled) return event;
+            
+            IPDFMacEventBusEvent *busEvent = [IPDFMacEventBusEvent new];
+            busEvent.type = weakMonitor.type;
+            busEvent.underlyingEvent = event;
+            return weakMonitor.eventHandler(busEvent).underlyingEvent;
+        }];
+    }
     [self.monitorsMutable addObject:monitor];
 }
 
@@ -82,6 +98,28 @@
     [self.monitorsMutable removeObject:monitor];
 }
 
+#pragma mark -
+#pragma mark Helpers
+
++ (NSDictionary *)appStateEventsMap
+{
+    static NSDictionary *appStateEventsMap = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^
+    {
+        appStateEventsMap =
+        @{
+            @"NSApplicationWillHideNotification" : @(IPDFMacEventBusAppStateEventHide),
+            @"NSApplicationWillUnhideNotification" : @(IPDFMacEventBusAppStateEventUnhide),
+            @"NSApplicationWillBecomeActiveNotification" : @(IPDFMacEventBusAppStateEventBecomeActive),
+            @"NSApplicationWillResignActiveNotification" : @(IPDFMacEventBusAppStateEventResignActive),
+            @"NSApplicationWillTerminateNotification" : @(IPDFMacEventBusAppStateEventTerminate),
+            @"NSApplicationDidChangeScreenParametersNotification" : @(IPDFMacEventBusAppStateEventScreenParameters),
+        };
+    });
+    return appStateEventsMap;
+}
+
 @end
 
 @implementation IPDFMacEventBusMonitor
@@ -93,6 +131,27 @@
     monitor.eventHandler = eventHandler;
     monitor.enabled = YES;
     return monitor;
+}
+
+- (void)appStateEventNotification:(NSNotification *)notification
+{
+    IPDFMacEventBusAppStateEvent appStateEvent = [[IPDFMacEventBus appStateEventsMap][notification.name] integerValue];
+    
+    IPDFMacEventBusEvent *event = [IPDFMacEventBusEvent new];
+    event.appStateEvent = appStateEvent;
+    event.underlyingEvent = (id)notification;
+    self.eventHandler(event);
+}
+
+- (void)dealloc
+{
+    if (self.type != IPDFMacEventBusTypeAppState) return;
+
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [[IPDFMacEventBus appStateEventsMap] enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop)
+    {
+        [notificationCenter removeObserver:self name:key object:nil];
+    }];
 }
 
 @end
@@ -121,6 +180,15 @@
 - (BOOL)isESC
 {
     return self.underlyingEvent.keyCode == 0x35;
+}
+
+@end
+
+@implementation IPDFMacEventBusEvent (AppState)
+
+- (IPDFMacEventBusAppStateEvent)appState
+{
+    return _appStateEvent;
 }
 
 @end
