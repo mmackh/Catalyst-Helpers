@@ -72,7 +72,7 @@ InstaPDF doesn't fetch documents in the background, but rather when the window b
     {
         NSLog(@"Terminate...");
     }
-return nil;
+    return nil;
 }]];
 ```
 
