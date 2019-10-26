@@ -90,6 +90,20 @@
 
 - (void)removeMonitor:(IPDFMacEventBusMonitor *)monitor
 {
+    if (monitor.type == IPDFMacEventBusTypeAppState)
+    {
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [[IPDFMacEventBus appStateEventsMap] enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop)
+        {
+            [notificationCenter removeObserver:monitor name:key object:nil];
+        }];
+        monitor.enabled = NO;
+        monitor.eventHandler = nil;
+        [self.monitorsMutable removeObject:monitor];
+        
+        return;
+    }
+    
     NSEvent_Catalyst *class = (id)NSClassFromString(@"NSEvent");
     [class removeMonitor:monitor.eventMonitor];
     monitor.eventMonitor = nil;
@@ -135,23 +149,14 @@
 
 - (void)appStateEventNotification:(NSNotification *)notification
 {
+    if (!self.enabled) return;
+    
     IPDFMacEventBusAppStateEvent appStateEvent = [[IPDFMacEventBus appStateEventsMap][notification.name] integerValue];
     
     IPDFMacEventBusEvent *event = [IPDFMacEventBusEvent new];
     event.appStateEvent = appStateEvent;
     event.underlyingEvent = (id)notification;
     self.eventHandler(event);
-}
-
-- (void)dealloc
-{
-    if (self.type != IPDFMacEventBusTypeAppState) return;
-
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [[IPDFMacEventBus appStateEventsMap] enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop)
-    {
-        [notificationCenter removeObserver:self name:key object:nil];
-    }];
 }
 
 @end
