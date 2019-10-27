@@ -35,8 +35,6 @@
 
 @property (nonatomic) id eventMonitor;
 
-- (void)appStateEventNotification:(NSNotification *)notification;
-
 @end
 
 @interface IPDFMacEventBus ()
@@ -69,7 +67,7 @@
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [[IPDFMacEventBus appStateEventsMap] enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop)
         {
-            [notificationCenter addObserver:monitor selector:@selector(appStateEventNotification:) name:key object:nil];
+            [notificationCenter addObserver:self selector:@selector(appStateEventNotification:) name:key object:nil];
         }];
     }
     else
@@ -92,14 +90,28 @@
 {
     if (monitor.type == IPDFMacEventBusTypeAppState)
     {
-        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-        [[IPDFMacEventBus appStateEventsMap] enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop)
-        {
-            [notificationCenter removeObserver:monitor name:key object:nil];
-        }];
         monitor.enabled = NO;
         monitor.eventHandler = nil;
         [self.monitorsMutable removeObject:monitor];
+        
+        BOOL foundAppStateMonitor = NO;
+        for (IPDFMacEventBusMonitor *activeMonitor in self.monitorsMutable)
+        {
+            if (activeMonitor.type == IPDFMacEventBusTypeAppState)
+            {
+                foundAppStateMonitor = YES;
+                break;
+            }
+        }
+        
+        if (!foundAppStateMonitor)
+        {
+           NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+           [[IPDFMacEventBus appStateEventsMap] enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop)
+           {
+               [notificationCenter removeObserver:self name:key object:nil];
+           }];
+        }
         
         return;
     }
@@ -110,6 +122,22 @@
     monitor.eventHandler = nil;
     monitor.enabled = NO;
     [self.monitorsMutable removeObject:monitor];
+}
+
+- (void)appStateEventNotification:(NSNotification *)notification
+{
+    IPDFMacEventBusAppStateEvent appStateEvent = [[IPDFMacEventBus appStateEventsMap][notification.name] integerValue];
+    IPDFMacEventBusEvent *event = [IPDFMacEventBusEvent new];
+    event.appStateEvent = appStateEvent;
+    event.underlyingEvent = (id)notification;
+    
+    for (IPDFMacEventBusMonitor *monitor in self.monitorsMutable)
+    {
+        if (monitor.type != IPDFMacEventBusTypeAppState) continue;
+        if (!monitor.enabled) continue;
+        
+        monitor.eventHandler(event);
+    }
 }
 
 #pragma mark -
@@ -145,18 +173,6 @@
     monitor.eventHandler = eventHandler;
     monitor.enabled = YES;
     return monitor;
-}
-
-- (void)appStateEventNotification:(NSNotification *)notification
-{
-    if (!self.enabled) return;
-    
-    IPDFMacEventBusAppStateEvent appStateEvent = [[IPDFMacEventBus appStateEventsMap][notification.name] integerValue];
-    
-    IPDFMacEventBusEvent *event = [IPDFMacEventBusEvent new];
-    event.appStateEvent = appStateEvent;
-    event.underlyingEvent = (id)notification;
-    self.eventHandler(event);
 }
 
 @end
