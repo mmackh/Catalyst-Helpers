@@ -32,7 +32,11 @@
     {
         self.spellCheckingType = UITextSpellCheckingTypeNo;
         self.autocorrectionType = UITextAutocorrectionTypeNo;
+        self.accessibilityValue = @"Password";
+        return;
     }
+    
+    self.accessibilityValue = nil;
 }
 
 - (void)setFont:(UIFont *)font
