@@ -77,8 +77,6 @@
         {
             if (!weakMonitor.enabled) return event;
             
-            NSLog(@"%@",event);
-            
             IPDFMacEventBusEvent *busEvent = [IPDFMacEventBusEvent new];
             busEvent.type = weakMonitor.type;
             busEvent.underlyingEvent = event;
