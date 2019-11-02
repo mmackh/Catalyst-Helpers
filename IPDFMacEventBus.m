@@ -77,6 +77,8 @@
         {
             if (!weakMonitor.enabled) return event;
             
+            NSLog(@"%@",event);
+            
             IPDFMacEventBusEvent *busEvent = [IPDFMacEventBusEvent new];
             busEvent.type = weakMonitor.type;
             busEvent.underlyingEvent = event;
@@ -106,11 +108,11 @@
         
         if (!foundAppStateMonitor)
         {
-           NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-           [[IPDFMacEventBus appStateEventsMap] enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop)
-           {
-               [notificationCenter removeObserver:self name:key object:nil];
-           }];
+            NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+            [[IPDFMacEventBus appStateEventsMap] enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *obj, BOOL *stop)
+            {
+                [notificationCenter removeObserver:self name:key object:nil];
+            }];
         }
         
         return;
@@ -195,12 +197,12 @@
 
 - (BOOL)isEnter
 {
-    return [self.characters isEqualToString:@"\r"];
+    return [self.characters isEqualToString:@"\r"] || self.underlyingEvent.keyCode == 76;
 }
 
 - (BOOL)isESC
 {
-    return self.underlyingEvent.keyCode == 0x35;
+    return self.underlyingEvent.keyCode == 53;
 }
 
 @end
