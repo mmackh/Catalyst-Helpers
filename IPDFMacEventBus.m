@@ -16,6 +16,8 @@
 @property (readonly) unsigned short keyCode;
 @property (readonly,copy) NSString *characters;
 
+@property (readonly) NSUInteger modifierFlags;
+
 @end
 
 @interface IPDFMacEventBusEvent ()
@@ -201,6 +203,18 @@
 - (BOOL)isESC
 {
     return self.underlyingEvent.keyCode == 53;
+}
+
+- (BOOL)ctrlModifier
+{
+    NSUInteger NSEventModifierFlagControl = 1 << 18;
+    return (self.underlyingEvent.modifierFlags & NSEventModifierFlagControl) > 0;
+}
+
+- (BOOL)cmdModifier
+{
+    NSUInteger NSEventModifierFlagCommand = 1 << 20;
+    return (self.underlyingEvent.modifierFlags & NSEventModifierFlagCommand) > 0;
 }
 
 @end
