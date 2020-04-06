@@ -60,6 +60,12 @@ typedef NS_ENUM(NSInteger, IPDFMacEventBusAppStateEvent)
 - (BOOL)isEnter;
 - (BOOL)isESC;
 
+- (BOOL)isArrowKey;
+- (BOOL)isArrowUp;
+- (BOOL)isArrowDown;
+- (BOOL)isArrowRight;
+- (BOOL)isArrowLeft;
+
 - (BOOL)ctrlModifier;
 - (BOOL)cmdModifier;
 
