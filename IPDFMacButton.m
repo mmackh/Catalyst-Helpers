@@ -83,6 +83,8 @@
 {
     [super layoutSubviews];
     
+    if (CGRectIsEmpty(self.bounds)) return;
+    
     CGRect targetRect = CGRectInset(self.bounds, 1, 0);
     targetRect.origin.y += 2;
     targetRect.size.height -= 2;
