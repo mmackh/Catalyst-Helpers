@@ -169,6 +169,10 @@
             toolbarItemStates = nil;
         }
         
+        for (UIView *subview in self.subviews) {
+            [subview removeFromSuperview];
+        }
+        
         [self.backgroundView removeFromSuperview];
         [self removeFromSuperview];
     }];
