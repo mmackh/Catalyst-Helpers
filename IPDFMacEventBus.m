@@ -205,6 +205,32 @@
     return self.underlyingEvent.keyCode == 53;
 }
 
+- (BOOL)isArrowKey
+{
+    return (self.isArrowUp || self.isArrowDown || self.isArrowRight || self.isArrowLeft);
+}
+
+- (BOOL)isArrowUp
+{
+    return self.underlyingEvent.keyCode == 126;
+}
+
+- (BOOL)isArrowDown
+{
+    return self.underlyingEvent.keyCode == 125;
+}
+
+- (BOOL)isArrowRight
+{
+    return self.underlyingEvent.keyCode == 124;
+}
+
+- (BOOL)isArrowLeft
+{
+    return self.underlyingEvent.keyCode == 123;
+}
+
+
 - (BOOL)ctrlModifier
 {
     NSUInteger NSEventModifierFlagControl = 1 << 18;
