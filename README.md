@@ -80,6 +80,66 @@ InstaPDF doesn't fetch documents in the background, but rather when the window b
 
 In addition to the helper classes I created, there were still some visual glitches and other unexpected behaviour in UIKit that will feel foreign on the Mac that cannot be abstracted
 
+### Opening Files from Dock Icon & Right-Click Finder "Open In..."
+
+You'll need to swizzle (I prefer https://github.com/steipete/Aspects). 
+
+1. Add appropriate entry to Info.plist, .pdf files in the example below
+```
+<array>
+	<dict>
+		<key>CFBundleTypeExtensions</key>
+		<array>
+			<string>pdf</string>
+		</array>
+		<key>CFBundleTypeIconFiles</key>
+		<array/>
+		<key>CFBundleTypeName</key>
+		<string>PDF Document</string>
+		<key>CFBundleTypeRole</key>
+		<string>Editor</string>
+		<key>LSHandlerRank</key>
+		<string>Owner</string>
+		<key>LSItemContentTypes</key>
+		<array>
+			<string>com.adobe.pdf</string>
+		</array>
+	</dict>
+</array>
+```
+
+2. Declare the appropriate selector to hook in AppDelegate
+```
+@interface AppDelegate ()
+
+@end
+
+@interface NSObject (private)
+
+- (void)processOpenURLs:(id)arg1;
+
+@end
+```
+
+3. Hook the selector and process the files
+```
+__weak typeof(self) weakSelf = self;
+[[NSNotificationCenter defaultCenter] addObserverForName:@"NSApplicationDidFinishLaunchingNotification" object:nil queue:nil usingBlock:^(NSNotification *note)
+{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        id app = [NSClassFromString(@"NSApplication") sharedApplication];
+        id delegate = [app delegate];
+
+        [delegate aspect_hookSelector:@selector(processOpenURLs:) withOptions:AspectPositionInstead usingBlock:^(id<AspectInfo> aspectInfo, NSArray *fileURLs)
+        {
+            [weakSelf openFiles:fileURLs];
+        } error:nil];
+    });
+}];
+```
+Before the dock would allow me to drag in files, I had to either: run a different project in Xcode after the plist entry or restart the OS. I can't remember which one helped.
+
 ### Blue highlights in UITableViewCell on selection
 
 <img alt="Double clicking causes the cell to highlight blue" align="right" width="320" height="80" src="https://github.com/mmackh/Catalyst-Helpers/blob/master/screenshots/UITableView%20-%20Blue%20Highlight.png?raw=true">
