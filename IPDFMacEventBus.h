@@ -10,6 +10,7 @@
 
 typedef NS_ENUM(unsigned long long, IPDFMacEventBusType)
 {
+    IPDFMacEventBusTypeUnknown = -1,
     IPDFMacEventBusTypeKeydown = 1ULL << 10,
     IPDFMacEventBusTypeAppState = 2ULL << 10
 };
@@ -30,6 +31,8 @@ typedef NS_ENUM(NSInteger, IPDFMacEventBusAppStateEvent)
 @interface IPDFMacEventBus : NSObject
 
 + (instancetype)sharedBus;
+
++ (IPDFMacEventBusEvent *)currentEvent;
 
 - (void)addMonitor:(IPDFMacEventBusMonitor *)monitor;
 - (void)removeMonitor:(IPDFMacEventBusMonitor *)monitor;
