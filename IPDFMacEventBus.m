@@ -59,6 +59,19 @@
     return bus;
 }
 
++ (IPDFMacEventBusEvent *)currentEvent
+{
+    id app = [NSClassFromString(@"NSApplication") performSelector:@selector(sharedApplication)];
+    id keyWindow = [app performSelector:@selector(keyWindow)];
+    if (!keyWindow) return nil;
+    id currentEvent = [keyWindow performSelector:@selector(currentEvent)];
+    
+    IPDFMacEventBusEvent *event =  [IPDFMacEventBusEvent new];
+    event.underlyingEvent = currentEvent;
+    event.type  = IPDFMacEventBusTypeUnknown;
+    return event;
+}
+
 - (void)addMonitor:(IPDFMacEventBusMonitor *)monitor
 {
     NSEvent_Catalyst *class = (id)NSClassFromString(@"NSEvent");
