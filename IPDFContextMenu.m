@@ -8,6 +8,8 @@
 
 #import "IPDFContextMenu.h"
 
+#import "IPDFMacEventBus.h"
+
 @interface NSMenu_Catalyst : NSObject
 
 @property (nonatomic) BOOL autoenablesItems;
@@ -74,12 +76,7 @@ typedef void(^IPDFContextMenuActionHandler)(void);
 
 - (void)show
 {
-    id app = [NSClassFromString(@"NSApplication") performSelector:@selector(sharedApplication)];
-    id keyWindow = [app performSelector:@selector(keyWindow)];
-    if (!keyWindow) return;
-    id currentEvent = [keyWindow performSelector:@selector(currentEvent)];
-    
-    [NSClassFromString(@"NSMenu") popUpContextMenu:self.attachedMenu withEvent:currentEvent forView:nil];
+    [NSClassFromString(@"NSMenu") popUpContextMenu:self.attachedMenu withEvent:[IPDFMacEventBus currentEvent].underlyingEvent forView:nil];
 }
 
 @end
