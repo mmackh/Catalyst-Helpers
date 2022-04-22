@@ -8,6 +8,8 @@
 
 #import "IPDFMacEventBus.h"
 
+#if TARGET_OS_MACCATALYST
+
 @interface NSEvent_Catalyst : NSObject
 
 - (id)addLocalMonitorForEventsMatchingMask:(long)mask handler:(id _Nullable (^)(id))block;
@@ -45,6 +47,13 @@
 
 @end
 
+@interface NSObject ()
+
++ (id)sharedApplication;
+- (id)keyWindow;
+
+@end
+
 @implementation IPDFMacEventBus
 
 + (instancetype)sharedBus
@@ -61,8 +70,8 @@
 
 + (IPDFMacEventBusEvent *)currentEvent
 {
-    id app = [NSClassFromString(@"NSApplication") performSelector:@selector(sharedApplication)];
-    id keyWindow = [app performSelector:@selector(keyWindow)];
+    id app = [NSClassFromString(@"NSApplication") sharedApplication];
+    id keyWindow = [app keyWindow];
     if (!keyWindow) return nil;
     id currentEvent = [keyWindow performSelector:@selector(currentEvent)];
     
@@ -87,7 +96,6 @@
     }
     else
     {
-        
         monitor.eventMonitor = [class addLocalMonitorForEventsMatchingMask:monitor.type handler:^id(NSEvent_Catalyst *event)
         {
             if (!weakMonitor.enabled) return event;
@@ -203,6 +211,10 @@
     return [(NSEvent_Catalyst *)self.underlyingEvent characters];
 }
 
+- (NSInteger)keyCode {
+    return self.underlyingEvent.keyCode;
+}
+
 - (BOOL)isTab
 {
     return [self.characters isEqualToString:@"\t"];
@@ -243,7 +255,6 @@
     return self.underlyingEvent.keyCode == 123;
 }
 
-
 - (BOOL)ctrlModifier
 {
     NSUInteger NSEventModifierFlagControl = 1 << 18;
@@ -256,6 +267,37 @@
     return (self.underlyingEvent.modifierFlags & NSEventModifierFlagCommand) > 0;
 }
 
+- (BOOL)shiftModifier
+{
+    NSUInteger NSEventModifierFlagCommand = 1 << 17;
+    return (self.underlyingEvent.modifierFlags & NSEventModifierFlagCommand) > 0;
+}
+
+- (BOOL)optionModifier
+{
+    NSUInteger NSEventModifierFlagCommand = 1 << 19;
+    return (self.underlyingEvent.modifierFlags & NSEventModifierFlagCommand) > 0;
+}
+
+@end
+
+@interface NSObject (Swipe)
+
+- (CGFloat)deltaX;
+- (CGFloat)deltaY;
+
+@end
+
+@implementation IPDFMacEventBusEvent (Swipe)
+
+- (CGFloat)deltaX {
+    return [self.underlyingEvent deltaX];
+}
+
+- (CGFloat)deltaY {
+    return [self.underlyingEvent deltaY];
+}
+
 @end
 
 @implementation IPDFMacEventBusEvent (AppState)
@@ -266,3 +308,5 @@
 }
 
 @end
+
+#endif
