@@ -8,11 +8,18 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(unsigned long long, IPDFMacEventBusType)
+#if TARGET_OS_MACCATALYST
+
+NS_ASSUME_NONNULL_BEGIN
+
+typedef NS_OPTIONS(NSUInteger, IPDFMacEventBusType)
 {
-    IPDFMacEventBusTypeUnknown = -1,
+    IPDFMacEventBusTypeUnknown = 0,
     IPDFMacEventBusTypeKeydown = 1ULL << 10,
-    IPDFMacEventBusTypeAppState = 2ULL << 10
+    IPDFMacEventBusTypeKeyup = 1ULL << 11,
+    IPDFMacEventBusTypeFlagsChanged = 1ULL << 12,
+    IPDFMacEventBusTypeSwipe = 1ULL << 31,
+    IPDFMacEventBusTypeAppState = 1ULL << 1000,
 };
 
 typedef NS_ENUM(NSInteger, IPDFMacEventBusAppStateEvent)
@@ -41,7 +48,7 @@ typedef NS_ENUM(NSInteger, IPDFMacEventBusAppStateEvent)
 
 @interface IPDFMacEventBusMonitor : NSObject
 
-+ (instancetype)monitorWithType:(IPDFMacEventBusType)type eventHandler:(IPDFMacEventBusEvent *(^)(IPDFMacEventBusEvent *event))eventHandler;
++ (instancetype)monitorWithType:(IPDFMacEventBusType)type eventHandler:(IPDFMacEventBusEvent * _Nullable (^)(IPDFMacEventBusEvent * event))eventHandler;
 
 @property (nonatomic,assign) BOOL enabled;
 
@@ -58,6 +65,7 @@ typedef NS_ENUM(NSInteger, IPDFMacEventBusAppStateEvent)
 @interface IPDFMacEventBusEvent (Keyboard)
 
 - (NSString *)characters;
+- (NSInteger)keyCode;
 
 - (BOOL)isTab;
 - (BOOL)isEnter;
@@ -71,6 +79,15 @@ typedef NS_ENUM(NSInteger, IPDFMacEventBusAppStateEvent)
 
 - (BOOL)ctrlModifier;
 - (BOOL)cmdModifier;
+- (BOOL)shiftModifier;
+- (BOOL)optionModifier;
+
+@end
+
+@interface IPDFMacEventBusEvent (Swipe)
+
+- (CGFloat)deltaX;
+- (CGFloat)deltaY;
 
 @end
 
@@ -79,3 +96,7 @@ typedef NS_ENUM(NSInteger, IPDFMacEventBusAppStateEvent)
 - (IPDFMacEventBusAppStateEvent)appState;
 
 @end
+
+NS_ASSUME_NONNULL_END
+
+#endif
